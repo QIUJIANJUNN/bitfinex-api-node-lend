@@ -27,8 +27,9 @@ const apiKey = 'xxxxxxxxxxxxxxxxxxx';
 const apiSecret = 'xxxxxxxxxxxxxxxxxxx';
 ```
 <br>
-### 2.
-```
+### 2.執行
+
+```JavaScript
 node index.js
 ```
 
