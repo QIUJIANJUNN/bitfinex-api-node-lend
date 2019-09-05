@@ -393,8 +393,6 @@ const checkIfPoss = async(currency)  => {
 
 
 // Renders an overview.
-// offer_currency = 
-
 const render_overview = async(offer_currency)  => {
     console.clear();
     console.log();
@@ -402,19 +400,16 @@ const render_overview = async(offer_currency)  => {
 	console.log();
 
     const ba = await checkIfPoss(offer_currency)
-    // console.log(typeof(ba))
     let remaining_balance = 0
     if (typeof ba === 'number'){
-        // console.log(ba)
         const funding_book = await get_funding_book(offer_currency,1,1)
         let funding_r = funding_book.bids[0].rate
-        funding_r = '36.5'
+        // funding_r = '36.5'
         let funding_a = funding_book.bids[0].amount
         let funding_p = funding_book.bids[0].period
         let check_amount = ''
         if(funding_a < ba) {
             check_amount = String(funding_a)
-            // 這裡要加一個再次運行 checkIfPoss 
         } else {
             check_amount = String(ba)
         }
