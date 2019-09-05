@@ -1,1 +1,36 @@
 # bitfinex-api-node-lend
+
+## 放貸幣種
+BTC
+<br>
+
+## 放貸條件
+放貸給想借錢的人。因為當前市場不是牛走熊，不會有突然超高的利率，因此“掛著等待借錢”與“掛著等人借錢”的利率相差不會太大。
+![](https://firebasestorage.googleapis.com/v0/b/blog-1f60b.appspot.com/o/1*CavSuiyU2lNzXzuX-CIWyg.png?alt=media&token=010335f4-08f7-4833-89b3-876e23c51106)
+<br>
+
+## 更新時間
+每10秒更新一次
+<br>
+
+## 使用方法
+### 1.添加 API Key
+#### 將index.js 的
+```JavaScript
+const apiKey = require("./config/apiKey").apiKey;
+const apiSecret = require("./config/apiKey").apiSecret;
+```
+
+#### 更改為
+```JavaScript
+const apiKey = 'xxxxxxxxxxxxxxxxxxx';
+const apiSecret = 'xxxxxxxxxxxxxxxxxxx';
+```
+<br>
+### 2.
+```
+node index.js
+```
+
+
+
