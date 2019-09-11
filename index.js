@@ -220,11 +220,13 @@ const render_overview = async(offer_currency)  => {
     let funding_loaning = await check_all_funding_loans(offer_currency)
     if (funding_loaning != 0) {
         for (let i = 0; i < funding_loaning.amount.length ; i++){
+            let funding_loaning_rate365 = funding_loaning.rate[i]*365
+            funding_loaning_rate365 = (funding_loaning_rate365.toFixed(4) *100) + '%'
             t.push([
                 funding_loaning.mtsCreate[i],
                 funding_loaning.symbol[i],
                 funding_loaning.amount[i],
-                funding_loaning.rate[i],
+                funding_loaning_rate365,
                 funding_loaning.period[i],
                 funding_loaning.mtsUpdate[i],
             ])
@@ -260,3 +262,12 @@ const render_overview = async(offer_currency)  => {
 
 setInterval(function(){render_overview(offer_currency)}, 10000);
 
+// bfxRest2.walletsHistory('BTC').then(r=>{
+//     // console.log(r[0])
+//     const ccc = []
+//     for (let i = 0; i< r.length; i++){
+//         console.log(r[i].currency)
+//         // ccc = r[i].mtsUpdate
+//     }
+//     // console.log(ccc)
+// })
