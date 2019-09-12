@@ -310,8 +310,12 @@ const render_overview = async(offer_currency)  => {
 	console.log(' ———————————————————————————————— 已提供 —————————————————————————————————');
     console.log(t.toString())
     console.log();
-	console.log(' ———————————————————————————————— 掛單中 —————————————————————————————————');
-    console.log(t1.toString())
+    console.log(' ———————————————————————————————— 掛單中 —————————————————————————————————');
+    if (funding_offers == 0) {
+        console.log('No funding loans')
+    } else {
+        console.log(t1.toString())
+    }
     console.log();
 	console.log(' ———————————————————————————————— 剩餘數量 —————————————————————————————————');
     console.log(remaining_balance)
