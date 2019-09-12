@@ -28,11 +28,12 @@ const apiSecret = require("./config/apiKey").apiSecret;
 const apiKey = 'xxxxxxxxxxxxxxxxxxx';
 const apiSecret = 'xxxxxxxxxxxxxxxxxxx';
 ```
-<br>
+
 ### 2. 設定收益計算起使日
 ```JavaScript
 const lending_start_date = '2019-09-10'
 ```
+
 ### 3. 執行
 
 ```JavaScript
