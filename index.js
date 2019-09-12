@@ -16,6 +16,7 @@ const bfxRest1 = bfx.rest(1, { transform: true });
 
 const offer_minimum = 50.0;
 const offer_currency = 'BTC';
+const lending_start_date = '2019-09-10'
 
 // Get funding Wallets balance,okay
 function get_funding_balance(currency) {
@@ -189,9 +190,27 @@ const checkIfPoss = async(currency)  => {
     }  
 }
 
+// Check total income
+function check_total_income(offer_currency,lending_start_date) {
+    const lending_start_date_t = new Date(lending_start_date).getTime()
+    return new Promise(function(resolve, reject){
+        return bfxRest1.balance_history(offer_currency, {} , (err, res) => {
+            if (err) console.log(err)
+            let ob = []
+            for (let i = 0; i < res.length; i++){
+                const timestamp1000 = Number(res[i].timestamp) *1000
+                if (timestamp1000>lending_start_date_t && res[i].description == "Margin Funding Payment on wallet deposit") {
+                    ob.push(res[i])
+                }
+            }
+            resolve(ob)
+        })  
+    })
+}
+
 // Renders an overview.
 const render_overview = async(offer_currency)  => {
-    // console.clear();
+    console.clear();
     console.log();
 	console.log(' ————————————————————————— XiaoJi BITFINEX LENDING BOT —————————————————————————');
 	console.log();
@@ -259,7 +278,35 @@ const render_overview = async(offer_currency)  => {
             ])
         }
     }
+    let total_income = await check_total_income(offer_currency,lending_start_date)
+    if (total_income.length == 0) {
+        return false
+    } 
+    const t2 = new Table({
+        head: ['Currency', 'Total','昨日收益', '累计收益', '累计USD收益',], 
+    });
+    let cumulative_income = 0
+    if (total_income.length == 1) {
+        cumulative_income = total_income[0].amount
+    }
+    if (total_income.length > 1) {
+        const len = total_income.length - 1
+        cumulative_income = total_income[0].balance - total_income[len].balance
+        cumulative_income = cumulative_income.toFixed(8)
+    }
 
+    let price =  await check_price(offer_currency)
+    let usd_valuation = cumulative_income * Number(price.last_price)
+    usd_valuation = usd_valuation.toFixed(2)
+
+    t2.push([
+        total_income[0].currency,
+        total_income[0].balance,
+        total_income[0].amount,
+        cumulative_income,
+        usd_valuation,
+    ])
+    
 	console.log(' ———————————————————————————————— 已提供 —————————————————————————————————');
     console.log(t.toString())
     console.log();
@@ -268,8 +315,8 @@ const render_overview = async(offer_currency)  => {
     console.log();
 	console.log(' ———————————————————————————————— 剩餘數量 —————————————————————————————————');
     console.log(remaining_balance)
+    console.log(' ———————————————————————————————— 累積收益 —————————————————————————————————');
+    console.log(t2.toString())
 }
 
 setInterval(function(){render_overview(offer_currency)}, 10000);
-
-
