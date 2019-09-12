@@ -191,7 +191,7 @@ const checkIfPoss = async(currency)  => {
 
 // Renders an overview.
 const render_overview = async(offer_currency)  => {
-    console.clear();
+    // console.clear();
     console.log();
 	console.log(' ————————————————————————— XiaoJi BITFINEX LENDING BOT —————————————————————————');
 	console.log();
@@ -200,9 +200,19 @@ const render_overview = async(offer_currency)  => {
     let remaining_balance = 0
     if (typeof ba === 'number'){
         const funding_book = await get_funding_book(offer_currency,1,1)
-        let funding_r = funding_book.bids[0].rate
-        let funding_a = funding_book.bids[0].amount
-        let funding_p = funding_book.bids[0].period
+        let funding_r = ''
+        let funding_a = ''
+        let funding_p = ''
+        let funding_book_asks_rate_range = funding_book.asks[0].rate * 1.2
+        if (funding_book.bids[0].rate < funding_book_asks_rate_range) {
+            funding_r = funding_book.asks[0].rate
+            funding_a = funding_book.asks[0].amount
+            funding_p = funding_book.asks[0].period
+        } else {
+            funding_r = funding_book.bids[0].rate
+            funding_a = funding_book.bids[0].amount
+            funding_p = funding_book.bids[0].period
+        }
         let check_amount = ''
         if(funding_a < ba) {
             check_amount = String(funding_a)
@@ -261,13 +271,3 @@ const render_overview = async(offer_currency)  => {
 }
 
 setInterval(function(){render_overview(offer_currency)}, 10000);
-
-// bfxRest2.walletsHistory('BTC').then(r=>{
-//     // console.log(r[0])
-//     const ccc = []
-//     for (let i = 0; i< r.length; i++){
-//         console.log(r[i].currency)
-//         // ccc = r[i].mtsUpdate
-//     }
-//     // console.log(ccc)
-// })
