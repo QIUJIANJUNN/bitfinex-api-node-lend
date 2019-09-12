@@ -6,6 +6,7 @@ BTC
 
 ## 放貸條件
 放貸給想借錢的人。因為當前市場不是牛走熊，不會有突然超高的利率，因此“掛著等待借錢”與“掛著等人借錢”的利率相差不會太大。
+如果“掛著等人借錢“*120% 比 “掛著等待借錢” 高時，使用“掛著等人借錢”的匯率。
 ![](https://firebasestorage.googleapis.com/v0/b/blog-1f60b.appspot.com/o/1*CavSuiyU2lNzXzuX-CIWyg.png?alt=media&token=010335f4-08f7-4833-89b3-876e23c51106)
 <br>
 

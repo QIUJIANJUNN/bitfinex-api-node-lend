@@ -271,3 +271,5 @@ const render_overview = async(offer_currency)  => {
 }
 
 setInterval(function(){render_overview(offer_currency)}, 10000);
+
+
