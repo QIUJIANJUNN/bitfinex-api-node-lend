@@ -20,15 +20,14 @@ const lending_start_date = '2019-09-10'
 
 // Get funding Wallets balance,okay
 function get_funding_balance(currency) {
-    let currencyUpper = currency.toUpperCase()
-    return bfxRest2.wallets().then(res => {
-        let filterFunding = res.map(function(item){
-            if ( item.type == "funding" && item.currency == currencyUpper) {
-                return item
-            }
-        })
-        return filterFunding[0].balance
-    })
+  const currencyUpper = currency.toUpperCase();
+  const foundWallet = bfxRest2.wallets().then(wallets => {
+    const [wallet] = wallets.filter(
+      wallet => wallet.type === "funding" && wallet.currency == currencyUpper
+    );
+    return wallet;
+  });
+  return foundWallet.then(foundWallet => foundWallet.balance);
 }
 
 // timestampToTime
