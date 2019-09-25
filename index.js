@@ -214,118 +214,130 @@ function check_total_income(offer_currency,lending_start_date) {
 }
 
 // Renders an overview.
-const render_overview = async(offer_currency)  => {
-    console.clear();
-    console.log();
-	console.log(' ————————————————————————— XiaoJi BITFINEX LENDING BOT —————————————————————————');
-	console.log();
+const render_overview = async offer_currency => {
+  console.clear();
+  const ba = await checkIfPoss(offer_currency);
+  let remaining_balance = 0;
 
-    const ba = await checkIfPoss(offer_currency)
-    let remaining_balance = 0
-    if (typeof ba === 'number'){
-        const funding_book = await get_funding_book(offer_currency,1,1)
-        let funding_r = ''
-        let funding_a = ''
-        let funding_p = ''
-        let funding_book_asks_rate_range = funding_book.asks[0].rate * 1.2
-        if (funding_book.bids[0].rate < funding_book_asks_rate_range) {
-            funding_r = funding_book.asks[0].rate
-            funding_a = funding_book.asks[0].amount
-            funding_p = funding_book.asks[0].period
-        } else {
-            funding_r = funding_book.bids[0].rate
-            funding_a = funding_book.bids[0].amount
-            funding_p = funding_book.bids[0].period
-        }
-        let check_amount = ''
-        if(funding_a < ba) {
-            check_amount = String(funding_a)
-        } else {
-            check_amount = String(ba)
-        }
-        await offer_a_funding(offer_currency, check_amount, funding_r, funding_p, 'lend')
+  if (typeof ba === "number") {
+    const funding_book = await get_funding_book(offer_currency, 1, 1);
+    let funding_r = "";
+    let funding_a = "";
+    let funding_p = "";
+    let funding_book_asks_rate_range = funding_book.asks[0].rate * 1.2;
+    if (funding_book.bids[0].rate < funding_book_asks_rate_range) {
+      funding_r = funding_book.asks[0].rate;
+      funding_a = funding_book.asks[0].amount;
+      funding_p = funding_book.asks[0].period;
     } else {
-        remaining_balance = ba.balance
+      funding_r = funding_book.bids[0].rate;
+      funding_a = funding_book.bids[0].amount;
+      funding_p = funding_book.bids[0].period;
     }
-    const t = new Table({
-        head: ['Opening', 'Currency','Amount', 'Rate', 'Period', 'LastPayout',], 
-        colWidths: [21, ]
-    });
-    let funding_loaning = await check_all_funding_loans(offer_currency)
-    if (funding_loaning != 0) {
-        for (let i = 0; i < funding_loaning.amount.length ; i++){
-            let funding_loaning_rate365 = funding_loaning.rate[i]*365
-            funding_loaning_rate365 = (funding_loaning_rate365.toFixed(4) *100) + '%'
-            t.push([
-                funding_loaning.mtsCreate[i],
-                funding_loaning.symbol[i],
-                funding_loaning.amount[i],
-                funding_loaning_rate365,
-                funding_loaning.period[i],
-                funding_loaning.mtsUpdate[i],
-            ])
-        }
-    }
-
-    const t1 = new Table({
-        head: ['Opening', 'Currency','Amount', 'Rate', 'Period', 'LastPayout',], 
-    });
-    let funding_offers = await check_funding_offers(offer_currency)
-    if (funding_offers != 0) {
-        for (let i = 0; i < funding_offers.amount.length ; i++){
-            t1.push([
-                funding_offers.mtsCreate[i],
-                funding_offers.symbol[i],
-                funding_offers.amount[i],
-                funding_offers.rate[i],
-                funding_offers.period[i],
-                funding_offers.mtsUpdate[i],
-            ])
-        }
-    }
-    let total_income = await check_total_income(offer_currency,lending_start_date)
-    if (total_income.length == 0) {
-        return false
-    } 
-    const t2 = new Table({
-        head: ['Currency', 'Total','昨日收益', '累计收益', '累计USD收益',], 
-    });
-    let cumulative_income = 0
-    if (total_income.length == 1) {
-        cumulative_income = total_income[0].amount
-    }
-    if (total_income.length > 1) {
-        const len = total_income.length - 1
-        cumulative_income = total_income[0].balance - total_income[len].balance
-        cumulative_income = cumulative_income.toFixed(8)
-    }
-
-    let price =  await check_price(offer_currency)
-    let usd_valuation = cumulative_income * Number(price.last_price)
-    usd_valuation = usd_valuation.toFixed(2)
-
-    t2.push([
-        total_income[0].currency,
-        total_income[0].balance,
-        total_income[0].amount,
-        cumulative_income,
-        usd_valuation,
-    ])
-    
-	console.log(' ———————————————————————————————— 已提供 —————————————————————————————————');
-    console.log(t.toString())
-    console.log();
-    console.log(' ———————————————————————————————— 掛單中 —————————————————————————————————');
-    if (funding_offers == 0) {
-        console.log('No funding loans')
+    let check_amount = "";
+    if (funding_a < ba) {
+      check_amount = String(funding_a);
     } else {
-        console.log(t1.toString())
+      check_amount = String(ba);
     }
-    console.log();
-	console.log(' ———————————————————————————————— 剩餘數量 —————————————————————————————————');
-    console.log(remaining_balance)
-    console.log(' ———————————————————————————————— 累積收益 —————————————————————————————————');
-    console.log(t2.toString())
-}
+    await offer_a_funding(
+      offer_currency,
+      check_amount,
+      funding_r,
+      funding_p,
+      "lend"
+    );
+  } else {
+    remaining_balance = ba.balance;
+  }
+  const t = new Table({
+    head: ["Opening", "Currency", "Amount", "Rate", "Period", "LastPayout"],
+    colWidths: [21]
+  });
+  let funding_loaning = await check_target_currency_all_funding_loans(
+    offer_currency
+  );
+
+  if (funding_loaning != 0) {
+    for (let i = 0; i < funding_loaning.amount.length; i++) {
+      let funding_loaning_rate365 = funding_loaning.rate[i] * 365;
+      funding_loaning_rate365 = funding_loaning_rate365.toFixed(4) * 100 + "%";
+      t.push([
+        funding_loaning.mtsCreate[i],
+        funding_loaning.symbol[i],
+        funding_loaning.amount[i],
+        funding_loaning_rate365,
+        funding_loaning.period[i],
+        funding_loaning.mtsUpdate[i]
+      ]);
+    }
+  }
+
+  const t1 = new Table({
+    head: ["Opening", "Currency", "Amount", "Rate", "Period", "LastPayout"]
+  });
+  let funding_offers = await check_funding_offers(offer_currency);
+  if (funding_offers != 0) {
+    for (let i = 0; i < funding_offers.amount.length; i++) {
+      t1.push([
+        funding_offers.mtsCreate[i],
+        funding_offers.symbol[i],
+        funding_offers.amount[i],
+        funding_offers.rate[i],
+        funding_offers.period[i],
+        funding_offers.mtsUpdate[i]
+      ]);
+    }
+  }
+  let total_income = await check_total_income(
+    offer_currency,
+    lending_start_date
+  );
+  if (total_income.length == 0) {
+    return false;
+  }
+  const t2 = new Table({
+    head: ["Currency", "Total", "昨日收益", "累计收益", "累计USD收益"]
+  });
+  let cumulative_income = 0;
+  if (total_income.length == 1) {
+    cumulative_income = total_income[0].amount;
+  }
+  if (total_income.length > 1) {
+    const len = total_income.length - 1;
+    cumulative_income = total_income[0].balance - total_income[len].balance;
+    cumulative_income = cumulative_income.toFixed(8);
+  }
+
+  let price = await check_price(offer_currency);
+  let usd_valuation = cumulative_income * Number(price.last_price);
+  usd_valuation = usd_valuation.toFixed(2);
+
+  t2.push([
+    total_income[0].currency,
+    total_income[0].balance,
+    total_income[0].amount,
+    cumulative_income,
+    usd_valuation
+  ]);
+
+  const renderString = `
+" ————————————————————————— XiaoJi BITFINEX LENDING BOT ————————————————————————— "
+
+" ———————————————————————————————— 已提供 ————————————————————————————————— "
+${t.toString()}
+
+
+" ———————————————————————————————— 掛單中 ————————————————————————————————— "
+${funding_offers === 0 ? "No funding loans" : t1.toString()}
+
+
+" ———————————————————————————————— 剩餘數量 ————————————————————————————————— "
+${remaining_balance}
+
+
+" ———————————————————————————————— 累積收益 ————————————————————————————————— "
+${t2.toString()}
+`;
 
 setInterval(function(){render_overview(offer_currency)}, 10000);
