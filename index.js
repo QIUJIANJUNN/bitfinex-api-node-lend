@@ -43,45 +43,51 @@ function timestamp_to_time(timestamp){
 }
 
 // Check All funding Loans.
-function check_all_funding_loans(currency) {
-    let currencyUpper = currency.toUpperCase()
-    const fCurrency = `f${currencyUpper}`
 
-    return bfxRest2.fundingCredits(fCurrency).then(res => {
-        if (res.length == 0) {
-            return 0
-        } 
-        let data = {
-            'mtsCreate': [],
-            'mtsUpdate': [],
-            'amount': [],
-            'symbol': [],
-            'rate': [],
-            'period': [],
-        }
-        for(let i = 0; i < res.length ; i++){
-            data.mtsCreate[i] = timestamp_to_time(res[i].mtsCreate) 
-            data.mtsUpdate[i] = timestamp_to_time(res[i].mtsUpdate)
-            data.amount[i] = res[i].amount 
-            data.symbol[i] = res[i].symbol 
-            data.rate[i] = res[i].rate 
-            data.period[i] = res[i].period 
-        }
-        return data
-    })
+function check_target_currency_all_funding_loans(currency) {
+  let currencyUpper = currency.toUpperCase();
+  const fCurrency = `f${currencyUpper}`;
+
+  return bfxRest2.fundingCredits(fCurrency).then(fundingCredits => {
+    if (fundingCredits.length == 0) {
+      return 0;
+    }
+    return fundingCredits.reduce(
+      (transformingFundingCredit, fundingCredit) => {
+        transformingFundingCredit.mtsCreate.push(
+          timestamp_to_time(fundingCredit.mtsCreate)
+        );
+        transformingFundingCredit.mtsUpdate.push(
+          timestamp_to_time(fundingCredit.mtsUpdate)
+        );
+        transformingFundingCredit.amount.push(fundingCredit.amount);
+        transformingFundingCredit.symbol.push(fundingCredit.symbol);
+        transformingFundingCredit.rate.push(fundingCredit.rate);
+        transformingFundingCredit.period.push(fundingCredit.period);
+        return transformingFundingCredit;
+      },
+      {
+        mtsCreate: [],
+        mtsUpdate: [],
+        amount: [],
+        symbol: [],
+        rate: [],
+        period: []
+      }
+    );
+  });
 }
-
 // Check All funding Loans amount.
-function check_all_funding_loans_amount(offer_currency){
-    return new Promise(function(resolve, reject){
-        check_all_funding_loans(offer_currency).then(r =>{
-            let amountTotal = 0
-            for (let i = 0; i < r.amount.length; i++){
-                amountTotal += r.amount[i]
-            }
-            resolve(amountTotal)
-            })
-    })
+function check_target_currency_all_funding_loans_amount(offer_currency) {
+  return new Promise(function(resolve, reject) {
+    check_target_currency_all_funding_loans(offer_currency).then(r => {
+      let amountTotal = 0;
+      for (let i = 0; i < r.amount.length; i++) {
+        amountTotal += r.amount[i];
+      }
+      resolve(amountTotal);
+    });
+  });
 }
 
 // Check funding Offers 
@@ -114,19 +120,19 @@ function check_funding_offers(currency) {
 }
 
 // Offers amount
-function check_funding_offers_amount(offer_currency){
-    return new Promise(function(resolve, reject){
-        check_funding_offers(offer_currency).then(r =>{
-            let amountTotal = 0
-            if (r != 0) {
-                for (let i = 0; i < r.amount.length; i++){
-                    amountTotal += r.amount[i]
-                }
-                resolve(amountTotal)
-            }
-            resolve(amountTotal)
-            })
-    })
+function check_funding_offers_amount(offer_currency) {
+  return new Promise(function(resolve, reject) {
+    check_funding_offers(offer_currency).then(r => {
+      let amountTotal = 0;
+      if (r != 0) {
+        for (let i = 0; i < r.amount.length; i++) {
+          amountTotal += r.amount[i];
+        }
+        resolve(amountTotal);
+      }
+      resolve(amountTotal);
+    });
+  });
 }
 
 // Gat available_amount
