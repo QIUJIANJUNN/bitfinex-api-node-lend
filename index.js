@@ -1,15 +1,15 @@
 const apiKey = require("./config/apiKey").apiKey;
 const apiSecret = require("./config/apiKey").apiSecret;
 const BFX = require("bitfinex-api-node");
-const Table = require('cli-table2');
+const Table = require("cli-table2");
 const bfx = new BFX({
-    apiKey: apiKey,
-    apiSecret: apiSecret,
-    ws: {
-        autoReconnect: true,
-        seqAudit: true,
-        packetWDDelay: 10 * 1000
-    }
+  apiKey: apiKey,
+  apiSecret: apiSecret,
+  ws: {
+    autoReconnect: true,
+    seqAudit: true,
+    packetWDDelay: 10 * 1000
+  }
 });
 const bfxRest2 = bfx.rest(2, { transform: true });
 const bfxRest1 = bfx.rest(1, { transform: true });
@@ -93,33 +93,33 @@ function check_target_currency_all_funding_loans_amount(offer_currency) {
   });
 }
 
-// Check funding Offers 
+// Check funding Offers
 function check_funding_offers(currency) {
-    let currencyUpper = currency.toUpperCase()
-    const fCurrency = `f${currencyUpper}`
+  let currencyUpper = currency.toUpperCase();
+  const fCurrency = `f${currencyUpper}`;
 
-    return bfxRest2.fundingOffers(fCurrency).then(res => {
-        if (res.length == 0) {
-            return 0
-        } 
-        let data = {
-            'mtsCreate': [],
-            'mtsUpdate': [],
-            'amount': [],
-            'symbol': [],
-            'rate': [],
-            'period': [],
-        }
-        for(let i = 0; i < res.length ; i++){
-            data.mtsCreate[i] = timestamp_to_time(res[i].mtsCreate) 
-            data.mtsUpdate[i] = timestamp_to_time(res[i].mtsUpdate) 
-            data.amount[i] = res[i].amount 
-            data.symbol[i] = res[i].symbol 
-            data.rate[i] = res[i].rate 
-            data.period[i] = res[i].period 
-        }
-        return data
-    })
+  return bfxRest2.fundingOffers(fCurrency).then(res => {
+    if (res.length == 0) {
+      return 0;
+    }
+    let data = {
+      mtsCreate: [],
+      mtsUpdate: [],
+      amount: [],
+      symbol: [],
+      rate: [],
+      period: []
+    };
+    for (let i = 0; i < res.length; i++) {
+      data.mtsCreate[i] = timestamp_to_time(res[i].mtsCreate);
+      data.mtsUpdate[i] = timestamp_to_time(res[i].mtsUpdate);
+      data.amount[i] = res[i].amount;
+      data.symbol[i] = res[i].symbol;
+      data.rate[i] = res[i].rate;
+      data.period[i] = res[i].period;
+    }
+    return data;
+  });
 }
 
 // Offers amount
@@ -139,81 +139,95 @@ function check_funding_offers_amount(offer_currency) {
 }
 
 // Gat available_amount
-const get_available_amount = async(currency)  => {
-    let funding_balance = await get_funding_balance(currency)
-    
-    let funding_loans_amount =  await check_all_funding_loans_amount(currency)
-    let funding_offers_amount = await check_funding_offers_amount(currency)
-    let available_amount = funding_balance - funding_loans_amount - funding_offers_amount
-    return available_amount
-}
+const get_available_amount = async currency => {
+  let funding_balance = await get_funding_balance(currency);
+
+  let funding_loans_amount = await check_target_currency_all_funding_loans_amount(
+    currency
+  );
+  let funding_offers_amount = await check_funding_offers_amount(currency);
+  let available_amount =
+    funding_balance - funding_loans_amount - funding_offers_amount;
+  return available_amount;
+};
 
 // Get funding book.
 function get_funding_book(currency, limit_asks, limit_bids) {
-    const options = {'limit_asks':limit_asks , 'limit_bids': limit_bids}
-    return new Promise(function(resolve, reject) {
-        bfxRest1.fundingbook(currency, options, (err, res) => {
-            if (err) console.log(err)
-            resolve(res)
-        })
-        
-        
-    })
-    
+  const options = { limit_asks: limit_asks, limit_bids: limit_bids };
+  return new Promise(function(resolve, reject) {
+    bfxRest1.fundingbook(currency, options, (err, res) => {
+      if (err) console.log(err);
+      resolve(res);
+    });
+  });
 }
 
 // funding credits
-function offer_a_funding(currency, amount, rate, period, direction, cb){
-    return new Promise(function(resolve, reject) {
-        return bfxRest1.new_offer(currency, amount, rate, period, direction, (err, res) => {
-            if (err) console.log(err)
-            resolve(res)
-        })
-    })
-} 
-
-// check_price
-function check_price(currency){
-    const symbol = currency + 'USD';
-    return new Promise(function(resolve, reject) {
-        bfxRest1.ticker(symbol, (err, res) => {
-            if (err) console.log(err)
-            resolve(res)
-        })
-    })
-} 
-
-// Check balance, if possible send amount.
-const checkIfPoss = async(currency)  => {
-    let balance = await get_available_amount(currency)
-    let price =  await check_price(currency)
-    let total = Number(balance) * Number(price.last_price)
-    if(total >= offer_minimum) {
-        return balance
-    } else {
-        return {
-            'balance': balance,
-            'total': total,
-        }
-    }  
+function offer_a_funding(currency, amount, rate, period, direction, cb) {
+  return new Promise(function(resolve, reject) {
+    return bfxRest1.new_offer(
+      currency,
+      amount,
+      rate,
+      period,
+      direction,
+      (err, res) => {
+        if (err) console.log(err);
+        resolve(res);
+      }
+    );
+  });
 }
 
+// check_price
+function check_price(currency) {
+  if (currency === "USD")
+    return Promise.resolve({
+      last_price: "1"
+    });
+  const symbol = currency + "USD";
+  return new Promise(function(resolve, reject) {
+    bfxRest1.ticker(symbol, (err, res) => {
+      if (err) console.log(err);
+      resolve(res);
+    });
+  });
+}
+
+// Check balance, if possible send amount.
+const checkIfPoss = async currency => {
+  let balance = await get_available_amount(currency);
+  let price = await check_price(currency);
+  let total = Number(balance) * Number(price.last_price);
+  if (total >= offer_minimum) {
+    return balance;
+  } else {
+    return {
+      balance: balance,
+      total: total
+    };
+  }
+};
+
 // Check total income
-function check_total_income(offer_currency,lending_start_date) {
-    const lending_start_date_t = new Date(lending_start_date).getTime()
-    return new Promise(function(resolve, reject){
-        return bfxRest1.balance_history(offer_currency, {} , (err, res) => {
-            if (err) console.log(err)
-            let ob = []
-            for (let i = 0; i < res.length; i++){
-                const timestamp1000 = Number(res[i].timestamp) *1000
-                if (timestamp1000>lending_start_date_t && res[i].description == "Margin Funding Payment on wallet deposit") {
-                    ob.push(res[i])
-                }
-            }
-            resolve(ob)
-        })  
-    })
+function check_total_income(offer_currency, lending_start_date) {
+  const lending_start_date_t = new Date(lending_start_date).getTime();
+  return new Promise(function(resolve, reject) {
+    return bfxRest1.balance_history(offer_currency, {}, (err, res) => {
+      if (err) console.log(err);
+      let ob = [];
+      for (let i = 0; i < res.length; i++) {
+        const timestamp1000 = Number(res[i].timestamp) * 1000;
+        if (
+          timestamp1000 > lending_start_date_t &&
+          res[i].description == "Margin Funding Payment on wallet deposit"
+        ) {
+          ob.push(res[i]);
+        }
+      }
+      resolve(ob);
+    });
+  });
 }
 
 // Renders an overview.
@@ -342,5 +356,9 @@ ${remaining_balance}
 " ———————————————————————————————— 累積收益 ————————————————————————————————— "
 ${t2.toString()}
 `;
+  console.log(renderString);
+};
 
-setInterval(function(){render_overview(offer_currency)}, 10000);
+setInterval(function() {
+  render_overview(offer_currency);
+}, 10000);
